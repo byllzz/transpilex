@@ -5,17 +5,14 @@ export function Header() {
   return (
     <header className="h-12 min-h-[48px] border-b border-gray-200 dark:border-[#1a1a1a] px-4 flex items-center justify-between bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-sm transition-colors">
       {/* Left: Brand */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+      <div className="flex items-center">
+        <div className="flex items-center justify-center w-7 h-7  text-indigo-600 dark:text-indigo-400">
           <ArrowLeftRight className="w-4 h-4" />
         </div>
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-baseline">
           <h1 className="text-sm font-bold text-gray-900 dark:text-[#e0e0e0] tracking-tight">
             TranspileX
           </h1>
-          <span className="text-[10px] font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-1.5 py-0.5 rounded-full">
-            v1.0
-          </span>
         </div>
         <span className="text-[11px] text-gray-500 dark:text-[#555] hidden md:inline border-l border-gray-200 dark:border-[#2a2a2a] pl-3">
           Code Converter

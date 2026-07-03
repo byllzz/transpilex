@@ -16,6 +16,8 @@ const DEFAULT_SETTINGS = {
   fontSize: 13,
 };
 
+type Settings = typeof DEFAULT_SETTINGS;
+
 function AppContent() {
   const {
     input,
@@ -34,11 +36,11 @@ function AppContent() {
 
   const [copied, setCopied] = useState(false);
   const [showError, setShowError] = useState(false);
-  const [errorTimeout, setErrorTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [errorTimeout, setErrorTimeout] = useState<number | null>(null); // 👈 Fix: number, not NodeJS.Timeout
   const [showSettings, setShowSettings] = useState(false);
 
   // Load settings from localStorage
-  const [settings, setSettings] = useState(() => {
+  const [settings, setSettings] = useState<Settings>(() => {
     const stored = localStorage.getItem('editor-settings');
     if (stored) {
       try {
@@ -56,11 +58,11 @@ function AppContent() {
   }, [settings]);
 
   const updateFontFamily = (family: string) => {
-    setSettings(prev => ({ ...prev, fontFamily: family }));
+    setSettings((prev: Settings) => ({ ...prev, fontFamily: family })); // 👈 explicit type
   };
 
   const updateFontSize = (size: number) => {
-    setSettings(prev => ({ ...prev, fontSize: size }));
+    setSettings((prev: Settings) => ({ ...prev, fontSize: size })); // 👈 explicit type
   };
 
   // Conversion
@@ -132,7 +134,6 @@ function AppContent() {
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100 overflow-hidden transition-colors">
       <Header />
-      {/* <-- ThemeSwitcher removed; now inside SettingsPanel */}
 
       <div className="px-4 py-2 border-b border-gray-200 dark:border-[#1a1a1a] bg-gray-50 dark:bg-[#0d0d0d] flex flex-wrap items-center justify-between gap-2 transition-colors">
         <LanguageSelector
@@ -157,7 +158,6 @@ function AppContent() {
             Download
           </Button>
 
-          {/* Settings button */}
           <Button
             variant="ghost"
             size="sm"
@@ -167,7 +167,6 @@ function AppContent() {
             <Settings className="w-3.5 h-3.5" />
           </Button>
 
-          {/* Settings panel */}
           {showSettings && (
             <SettingsPanel
               fontFamily={settings.fontFamily}
@@ -180,7 +179,6 @@ function AppContent() {
         </div>
       </div>
 
-      {/* Error banner */}
       {showError && error && (
         <div className="bg-red-50 dark:bg-red-500/10 border-b border-red-200 dark:border-red-500/20 px-4 py-2 text-red-600 dark:text-red-400 text-sm flex items-center justify-between gap-2 transition-colors">
           <div className="flex items-center gap-2">
