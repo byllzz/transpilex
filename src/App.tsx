@@ -2,21 +2,18 @@ import { useState, useEffect } from 'react';
 import { Header } from './components/layout/Header';
 import { SplitEditor } from './components/editor/SplitEditor';
 import { LanguageSelector } from './components/editor/LanguageSelector';
-import { Button } from './components/ui/Button';
 import { SettingsPanel } from './components/ui/SettingsPanel';
+import { ConversionInfoPanel } from './components/ConversionInfoPanel';
+import { NotificationBanner } from './components/NotificationBanner';
+import { ToolbarActions } from './components/ToolbarActions';
 import { useConverter } from './hooks/useConverter';
-import { Copy, Check, Download, X, Settings } from 'lucide-react';
+import { useSettings } from './hooks/useSettings';
+import { useConversion } from './hooks/useConversion';
 import { ThemeProvider } from './context/ThemeContext';
-import { languages } from './lib/languages';
+import { languages, conversionPairs } from './lib/languages';
 import { CiWarning } from 'react-icons/ci';
-
-// Default settings
-const DEFAULT_SETTINGS = {
-  fontFamily: "'JetBrains Mono', monospace",
-  fontSize: 13,
-};
-
-type Settings = typeof DEFAULT_SETTINGS;
+import { SAMPLES } from './lib/samples';
+import { X } from 'lucide-react';
 
 function AppContent() {
   const {
@@ -34,40 +31,45 @@ function AppContent() {
     swapLanguages,
   } = useConverter();
 
+  // App-wide preloader state
+  const [isAppLoading, setIsAppLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [showError, setShowError] = useState(false);
-  const [errorTimeout, setErrorTimeout] = useState<number | null>(null); // 👈 Fix: number, not NodeJS.Timeout
+  const [errorTimeout, setErrorTimeout] = useState<number | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showConversionInfo, setShowConversionInfo] = useState(false);
 
-  // Load settings from localStorage
-  const [settings, setSettings] = useState<Settings>(() => {
-    const stored = localStorage.getItem('editor-settings');
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch {
-        return DEFAULT_SETTINGS;
-      }
-    }
-    return DEFAULT_SETTINGS;
-  });
+  // Use custom hooks
+  const { settings, updateFontFamily, updateFontSize } = useSettings();
+  const {
+    notification,
+    setNotification,
+    handleManualToChange,
+    hasConverter,
+    fromLabel,
+    toLabel,
+    availableTargets,
+  } = useConversion(from, to, setTo);
 
-  // Save settings to localStorage
+  // Handle initialization/site preloader dismissal
   useEffect(() => {
-    localStorage.setItem('editor-settings', JSON.stringify(settings));
-  }, [settings]);
+    const timer = setTimeout(() => {
+      setIsAppLoading(false);
+    }, 1200); // 800ms gives a smooth initial feel
+    return () => clearTimeout(timer);
+  }, []);
 
-  const updateFontFamily = (family: string) => {
-    setSettings((prev: Settings) => ({ ...prev, fontFamily: family })); // 👈 explicit type
-  };
-
-  const updateFontSize = (size: number) => {
-    setSettings((prev: Settings) => ({ ...prev, fontSize: size })); // 👈 explicit type
-  };
+  // Load sample when 'from' changes
+  useEffect(() => {
+    if (SAMPLES[from]) {
+      setInput(SAMPLES[from]);
+    }
+  }, [from, setInput]);
 
   // Conversion
   useEffect(() => {
-    if (!input.trim()) {
+    const hasConverter = conversionPairs.some(p => p.source.id === from && p.target.id === to);
+    if (!input.trim() || !hasConverter) {
       setOutput('');
       return;
     }
@@ -131,52 +133,66 @@ function AppContent() {
     URL.revokeObjectURL(url);
   };
 
+  // Render preloader overlay if application is initializing
+  if (isAppLoading) {
+    return (
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-white dark:bg-[#0a0a0a] transition-colors duration-300 z-[9999]">
+        <div className="w-10 h-10 border-4 border-gray-200 dark:border-zinc-800 border-t-blue-600 dark:border-t-blue-500 rounded-full animate-spin"></div>
+        <span className="mt-4 text-xs font-medium text-gray-500 dark:text-zinc-400 tracking-wider animate-pulse">
+          Loading TranspileX Converter Workspace...
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100 overflow-hidden transition-colors">
       <Header />
 
-      <div className="px-4 py-2 border-b border-gray-200 dark:border-[#1a1a1a] bg-gray-50 dark:bg-[#0d0d0d] flex flex-wrap items-center justify-between gap-2 transition-colors">
+      <NotificationBanner notification={notification} onDismiss={() => setNotification(null)} />
+
+      <div className="relative px-4 py-2 border-b border-gray-200 dark:border-[#1a1a1a] bg-gray-50 dark:bg-[#0d0d0d] flex flex-wrap items-center justify-between gap-2 transition-colors">
         <LanguageSelector
           from={from}
           to={to}
           onFromChange={setFrom}
-          onToChange={setTo}
+          onToChange={handleManualToChange}
           onSwap={swapLanguages}
         />
 
-        <div className="flex items-center gap-1 relative">
-          <Button variant="ghost" size="sm" onClick={handleCopy} disabled={!output}>
-            {copied ? (
-              <Check className="w-3.5 h-3.5 text-green-500 dark:text-green-400" />
-            ) : (
-              <Copy className="w-3.5 h-3.5" />
-            )}
-            {copied ? 'Copied' : 'Copy'}
-          </Button>
-          <Button variant="ghost" size="sm" onClick={handleDownload} disabled={!output}>
-            <Download className="w-3.5 h-3.5" />
-            Download
-          </Button>
+        <ToolbarActions
+          copied={copied}
+          onCopy={handleCopy}
+          onDownload={handleDownload}
+          showSettings={showSettings}
+          onToggleSettings={() => setShowSettings(!showSettings)}
+          showConversionInfo={showConversionInfo}
+          onToggleConversionInfo={() => setShowConversionInfo(!showConversionInfo)}
+          disabledCopy={!output}
+          disabledDownload={!output}
+        />
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowSettings(!showSettings)}
-            className={showSettings ? 'bg-gray-200 dark:bg-white/10' : ''}
-          >
-            <Settings className="w-3.5 h-3.5" />
-          </Button>
+        {/* Settings Panel */}
+        {showSettings && (
+          <SettingsPanel
+            fontFamily={settings.fontFamily}
+            fontSize={settings.fontSize}
+            onFontFamilyChange={updateFontFamily}
+            onFontSizeChange={updateFontSize}
+            onClose={() => setShowSettings(false)}
+          />
+        )}
 
-          {showSettings && (
-            <SettingsPanel
-              fontFamily={settings.fontFamily}
-              fontSize={settings.fontSize}
-              onFontFamilyChange={updateFontFamily}
-              onFontSizeChange={updateFontSize}
-              onClose={() => setShowSettings(false)}
-            />
-          )}
-        </div>
+        {/* Conversion Info Panel */}
+        {showConversionInfo && (
+          <ConversionInfoPanel
+            fromLabel={fromLabel}
+            toLabel={toLabel}
+            hasConverter={hasConverter}
+            availableTargets={availableTargets}
+            onClose={() => setShowConversionInfo(false)}
+          />
+        )}
       </div>
 
       {showError && error && (
