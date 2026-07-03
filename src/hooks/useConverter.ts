@@ -15,18 +15,21 @@ export function useConverter() {
     setIsConverting(true);
     setError(null);
 
-    const result: ConversionResult = convertCode(code, source, target);
-
-    if (result.error) {
-      setError(result.error);
+    try {
+      const result: ConversionResult = convertCode(code, source, target);
+      if (result.error) {
+        setError(result.error);
+        setOutput('');
+      } else {
+        const formatted = await formatCode(result.code, target);
+        setOutput(formatted);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown conversion error');
       setOutput('');
+    } finally {
       setIsConverting(false);
-      return;
     }
-
-    const formatted = await formatCode(result.code, target);
-    setOutput(formatted);
-    setIsConverting(false);
   }, []);
 
   const swapLanguages = useCallback(() => {

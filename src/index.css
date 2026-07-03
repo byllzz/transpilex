@@ -1,10 +1,19 @@
 @import 'tailwindcss';
+/* 👇 Add this line to support manual class-based dark mode toggling in Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
 
+/* Smooth theme transitions */
+* {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
 
-/* Custom scrollbar */
-
+/* Custom scrollbar (light/dark) */
 * {
   scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+
+.dark * {
   scrollbar-color: #262626 transparent;
 }
 
@@ -18,20 +27,24 @@
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: #262626;
+  background-color: #d1d5db;
   border-radius: 8px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 
+.dark *::-webkit-scrollbar-thumb {
+  background-color: #262626;
+}
+
 *::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+.dark *::-webkit-scrollbar-thumb:hover {
   background-color: #383838;
 }
 
 *::-webkit-scrollbar-thumb:active {
-  background-color: #4a4a4a;
-}
-
-*::-webkit-scrollbar-corner {
-  background: transparent;
+  background-color: #6b7280;
 }

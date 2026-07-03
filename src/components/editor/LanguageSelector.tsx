@@ -34,18 +34,21 @@ function LangDropdown({ value, options, onChange, align = 'left' }: LangDropdown
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-1.5 bg-[#0d0d0d] border border-[#1a1a1a] hover:border-[#2a2a2a] text-[#e0e0e0] text-xs rounded-md pl-2 pr-1.5 py-1.5 min-w-[112px] transition-colors cursor-pointer"
+        className="flex items-center gap-1.5 bg-white dark:bg-[#0d0d0d] border border-gray-300 dark:border-[#1a1a1a] hover:border-gray-400 dark:hover:border-[#2a2a2a] text-gray-800 dark:text-[#e0e0e0] text-xs rounded-md pl-2 pr-1.5 py-1.5 min-w-[112px] transition-colors cursor-pointer"
       >
-        <LanguageIcon id={selected.id} className="w-3.5 h-3.5 shrink-0 text-[#999]" />
+        <LanguageIcon
+          id={selected.id}
+          className="w-3.5 h-3.5 shrink-0 text-gray-500 dark:text-[#999]"
+        />
         <span className="flex-1 text-left truncate">{selected.label}</span>
         <ChevronDown
-          className={`w-3 h-3 text-[#666] shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`w-3 h-3 text-gray-500 dark:text-[#666] shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
 
       {open && (
         <div
-          className={`absolute z-20 mt-1 w-48 max-h-64 overflow-y-auto bg-[#0d0d0d] border border-[#1a1a1a] rounded-md py-1 shadow-lg shadow-black/40 ${
+          className={`absolute z-20 mt-1 w-48 max-h-64 overflow-y-auto bg-white dark:bg-[#0d0d0d] border border-gray-200 dark:border-[#1a1a1a] rounded-md py-1 shadow-lg shadow-black/20 dark:shadow-black/40 ${
             align === 'right' ? 'right-0' : 'left-0'
           }`}
         >
@@ -60,11 +63,14 @@ function LangDropdown({ value, options, onChange, align = 'left' }: LangDropdown
                 }}
                 className={`w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-left transition-colors cursor-pointer ${
                   active
-                    ? 'text-indigo-400 bg-indigo-400/[0.06]'
-                    : 'text-[#ccc] hover:bg-white/[0.05]'
+                    ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-400/[0.06]'
+                    : 'text-gray-700 dark:text-[#ccc] hover:bg-gray-100 dark:hover:bg-white/[0.05]'
                 }`}
               >
-                <LanguageIcon id={lang.id} className="w-3.5 h-3.5 shrink-0 text-[#999]" />
+                <LanguageIcon
+                  id={lang.id}
+                  className="w-3.5 h-3.5 shrink-0 text-gray-500 dark:text-[#999]"
+                />
                 <span className="flex-1 truncate">{lang.label}</span>
                 {active && <Check className="w-3 h-3 shrink-0" />}
               </button>
@@ -97,10 +103,10 @@ export function LanguageSelector({
 
       <button
         onClick={onSwap}
-        className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#1a1a1a] transition-colors cursor-pointer"
+        className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-[#1a1a1a] transition-colors cursor-pointer text-gray-500 dark:text-[#888] hover:text-gray-700 dark:hover:text-white"
         title="Swap languages"
       >
-        <ArrowLeftRight className="w-3.5 h-3.5 text-[#888]" />
+        <ArrowLeftRight className="w-3.5 h-3.5" />
       </button>
 
       <LangDropdown

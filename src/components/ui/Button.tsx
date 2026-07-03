@@ -1,28 +1,29 @@
-import type { ButtonHTMLAttributes } from 'react';
-
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'ghost';
-  size?: 'default' | 'sm' | 'icon';
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'ghost';
+  size?: 'sm' | 'md';
 }
 
 export function Button({
-  variant = 'default',
-  size = 'default',
+  variant = 'primary',
+  size = 'md',
   className = '',
   ...props
 }: ButtonProps) {
   const base =
-    'rounded-md font-medium cursor-pointer transition-colors inline-flex items-center justify-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed';
+    'inline-flex items-center gap-1.5 font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none';
+
   const variants = {
-    default: 'bg-indigo-600 text-white hover:bg-indigo-500',
-    ghost: 'bg-transparent hover:bg-[#1a1a1a] text-[#888] hover:text-[#e0e0e0]',
+    primary: 'bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md text-sm',
+    ghost:
+      'bg-transparent hover:bg-gray-100 dark:hover:bg-white/[0.06] text-gray-700 dark:text-gray-300 px-2 py-1 rounded text-sm',
   };
+
   const sizes = {
-    default: 'px-4 py-2 text-sm',
-    sm: 'px-2.5 py-1 text-xs',
-    icon: 'w-8 h-8 p-0',
+    sm: 'text-xs px-2 py-1',
+    md: 'text-sm px-3 py-1.5',
   };
-  return (
-    <button className={`${base} ${variants[variant]} ${sizes[size]} ${className}`} {...props} />
-  );
+
+  const classes = `${base} ${variants[variant]} ${sizes[size]} ${className}`;
+
+  return <button className={classes} {...props} />;
 }

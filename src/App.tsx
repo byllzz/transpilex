@@ -3,10 +3,12 @@ import { Header } from './components/layout/Header';
 import { SplitEditor } from './components/editor/SplitEditor';
 import { LanguageSelector } from './components/editor/LanguageSelector';
 import { Button } from './components/ui/Button';
+import { ThemeSwitcher } from './components/ui/ThemeSwitcher';
 import { useConverter } from './hooks/useConverter';
 import { Copy, Check, Download } from 'lucide-react';
+import { ThemeProvider } from './context/ThemeContext';
 
-function App() {
+function AppContent() {
   const {
     input,
     setInput,
@@ -23,11 +25,8 @@ function App() {
 
   const [copied, setCopied] = useState(false);
 
-  // Auto-convert on changes with debounce
   useEffect(() => {
-    if (!input.trim()) {
-      return;
-    }
+    if (!input.trim()) return;
     const timer = setTimeout(() => convert(input, from, to), 400);
     return () => clearTimeout(timer);
   }, [input, from, to, convert]);
@@ -51,11 +50,12 @@ function App() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-[#0a0a0a] text-[#e0e0e0] overflow-hidden">
-      <Header />
+    <div className="h-screen flex flex-col bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100 overflow-hidden transition-colors">
+      <Header>
+        <ThemeSwitcher />
+      </Header>
 
-      {/* Language selector & actions */}
-      <div className="px-4 py-2 border-b border-[#1a1a1a] bg-[#0d0d0d] flex flex-wrap items-center justify-between gap-2">
+      <div className="px-4 py-2 border-b border-gray-200 dark:border-[#1a1a1a] bg-gray-50 dark:bg-[#0d0d0d] flex flex-wrap items-center justify-between gap-2 transition-colors">
         <LanguageSelector
           from={from}
           to={to}
@@ -66,7 +66,7 @@ function App() {
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm" onClick={handleCopy} disabled={!output}>
             {copied ? (
-              <Check className="w-3.5 h-3.5 text-green-400" />
+              <Check className="w-3.5 h-3.5 text-green-500 dark:text-green-400" />
             ) : (
               <Copy className="w-3.5 h-3.5" />
             )}
@@ -79,14 +79,12 @@ function App() {
         </div>
       </div>
 
-      {/* Error banner */}
       {error && (
-        <div className="bg-red-500/10 border-b border-red-500/20 px-4 py-2 text-red-400 text-sm flex items-center gap-2">
+        <div className="bg-red-50 dark:bg-red-500/10 border-b border-red-200 dark:border-red-500/20 px-4 py-2 text-red-600 dark:text-red-400 text-sm flex items-center gap-2 transition-colors">
           <span>⚠️</span> {error}
         </div>
       )}
 
-      {/* Editor panels with resizer */}
       <div className="flex-1 flex min-h-0">
         <SplitEditor
           fromValue={input}
@@ -95,18 +93,26 @@ function App() {
           fromLanguage={from}
           toLanguage={to}
           fromLabel="Source"
-          toLabel={isConverting ? 'Converting...' : 'Output'}
+          toLabel="Output"
+          toLoading={isConverting} // 👈 Show spinner in output while converting
         />
       </div>
 
-      {/* Status bar */}
-      <div className="h-6 min-h-[24px] border-t border-[#1a1a1a] px-4 flex items-center justify-between bg-[#0a0a0a] text-[10px] text-[#444]">
+      <div className="h-6 min-h-[24px] border-t border-gray-200 dark:border-[#1a1a1a] px-4 flex items-center justify-between bg-gray-50 dark:bg-[#0a0a0a] text-[10px] text-gray-500 dark:text-[#444] transition-colors">
         <span>
           {from.toUpperCase()} → {to.toUpperCase()}
         </span>
         <span>{input.split('\n').length} lines</span>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 
