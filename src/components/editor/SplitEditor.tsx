@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react';
+import { ArrowLeftRight } from 'lucide-react';
 import { CodePanel } from './CodePanel';
 import { useResizablePanels } from '../../hooks/useResizablePanels';
 import { useTheme } from '../../context/ThemeContext';
@@ -13,6 +13,8 @@ interface SplitEditorProps {
   toLabel?: string;
   fromLoading?: boolean;
   toLoading?: boolean;
+  fontFamily?: string; // 👈 new
+  fontSize?: number; // 👈 new
 }
 
 export function SplitEditor({
@@ -25,6 +27,8 @@ export function SplitEditor({
   toLabel = 'Output',
   fromLoading = false,
   toLoading = false,
+  fontFamily = "'JetBrains Mono', monospace", // default
+  fontSize = 13, // default
 }: SplitEditorProps) {
   const { containerRef, leftWidth, dragging, onMouseDown } = useResizablePanels();
   const { resolvedTheme } = useTheme();
@@ -41,25 +45,37 @@ export function SplitEditor({
           role="input"
           editorTheme={editorTheme}
           loading={fromLoading}
+          fontFamily={fontFamily} // 👈 pass through
+          fontSize={fontSize} // 👈 pass through
         />
       </div>
 
       {/* Resizer */}
       <div
         onMouseDown={onMouseDown}
-        className="relative w-px shrink-0 bg-gray-200 dark:bg-[#1a1a1a] hover:bg-gray-400 dark:hover:bg-white/20 cursor-col-resize group transition-colors"
+        role="separator"
+        aria-orientation="vertical"
+        aria-valuenow={Math.round(leftWidth)}
+        className="relative w-0.5 shrink-0 bg-gray-300 dark:bg-[#2a2a2a] hover:bg-gray-400 dark:hover:bg-white/30 cursor-col-resize group transition-colors"
       >
-        <div className="absolute inset-y-0 -left-1.5 -right-1.5" />
+        {/* Expanded hit area — ~20px */}
+        <div className="absolute inset-y-0 -left-[10px] -right-[10px]" />
+
+        {/* Visual handle pill */}
         <div
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[3px] h-8 rounded-full transition-colors ${
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[4px] h-8 rounded-full transition-colors ${
             dragging
-              ? 'bg-indigo-500 dark:bg-white/40'
-              : 'bg-gray-300 dark:bg-[#2a2a2a] group-hover:bg-indigo-400 dark:group-hover:bg-white/25'
+              ? 'bg-indigo-500 dark:bg-white/50'
+              : 'bg-gray-400 dark:bg-[#444] group-hover:bg-indigo-400 dark:group-hover:bg-white/30'
           }`}
         />
 
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-white dark:bg-[#141414] border border-gray-200 dark:border-[#262626] flex items-center justify-center pointer-events-none transition-colors z-999">
-          <ArrowRight className="w-3 h-3 text-gray-500 dark:text-[#666]" />
+        {/* Two arrow icons (top and bottom) */}
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white dark:bg-[#141414] border border-gray-300 dark:border-[#333] flex items-center justify-center pointer-events-none transition-colors shadow-sm z-99">
+          <ArrowLeftRight className="w-3 h-3 text-gray-600 dark:text-[#888]" />
+        </div>
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-white dark:bg-[#141414] border border-gray-300 dark:border-[#333] flex items-center justify-center pointer-events-none transition-colors shadow-sm z-99">
+          <ArrowLeftRight className="w-3 h-3 text-gray-600 dark:text-[#888]" />
         </div>
       </div>
 
@@ -72,6 +88,8 @@ export function SplitEditor({
           readOnly
           editorTheme={editorTheme}
           loading={toLoading}
+          fontFamily={fontFamily}
+          fontSize={fontSize}
         />
       </div>
     </div>

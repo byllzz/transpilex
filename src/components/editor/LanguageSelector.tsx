@@ -33,7 +33,10 @@ function LangDropdown({ value, options, onChange, align = 'left' }: LangDropdown
   return (
     <div ref={ref} className="relative">
       <button
+        type="button"
         onClick={() => setOpen(o => !o)}
+        aria-label="Select language"
+        aria-expanded={open}
         className="flex items-center gap-1.5 bg-white dark:bg-[#0d0d0d] border border-gray-300 dark:border-[#1a1a1a] hover:border-gray-400 dark:hover:border-[#2a2a2a] text-gray-800 dark:text-[#e0e0e0] text-xs rounded-md pl-2 pr-1.5 py-1.5 min-w-[112px] transition-colors cursor-pointer"
       >
         <LanguageIcon
@@ -57,6 +60,7 @@ function LangDropdown({ value, options, onChange, align = 'left' }: LangDropdown
             return (
               <button
                 key={lang.id}
+                type="button"
                 onClick={() => {
                   onChange(lang.id);
                   setOpen(false);
@@ -102,9 +106,11 @@ export function LanguageSelector({
       <LangDropdown value={from} options={languages} onChange={onFromChange} align="left" />
 
       <button
+        type="button"
         onClick={onSwap}
         className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-gray-100 dark:hover:bg-[#1a1a1a] transition-colors cursor-pointer text-gray-500 dark:text-[#888] hover:text-gray-700 dark:hover:text-white"
         title="Swap languages"
+        aria-label="Swap languages"
       >
         <ArrowLeftRight className="w-3.5 h-3.5" />
       </button>
