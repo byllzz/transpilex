@@ -1,6 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from './components/layout/Header';
-import { CodePanel } from './components/editor/CodePanel';
+import { SplitEditor } from './components/editor/SplitEditor';
 import { LanguageSelector } from './components/editor/LanguageSelector';
 import { Button } from './components/ui/Button';
 import { useConverter } from './hooks/useConverter';
@@ -30,7 +30,7 @@ function App() {
     }
     const timer = setTimeout(() => convert(input, from, to), 400);
     return () => clearTimeout(timer);
-  }, [input, from, to]);
+  }, [input, from, to, convert]);
 
   const handleCopy = async () => {
     if (!output) return;
@@ -54,8 +54,8 @@ function App() {
     <div className="h-screen flex flex-col bg-[#0a0a0a] text-[#e0e0e0] overflow-hidden">
       <Header />
 
-      {/* Language selector */}
-      <div className="px-4 py-2 border-b border-[#1a1a1a] bg-[#0d0d0d] flex items-center justify-between">
+      {/* Language selector & actions */}
+      <div className="px-4 py-2 border-b border-[#1a1a1a] bg-[#0d0d0d] flex flex-wrap items-center justify-between gap-2">
         <LanguageSelector
           from={from}
           to={to}
@@ -79,14 +79,23 @@ function App() {
         </div>
       </div>
 
-      {/* Editor panels */}
+      {/* Error banner */}
+      {error && (
+        <div className="bg-red-500/10 border-b border-red-500/20 px-4 py-2 text-red-400 text-sm flex items-center gap-2">
+          <span>⚠️</span> {error}
+        </div>
+      )}
+
+      {/* Editor panels with resizer */}
       <div className="flex-1 flex min-h-0">
-        <CodePanel value={input} onChange={setInput} language={from} label="Source" />
-        <CodePanel
-          value={error ? `Error: ${error}` : output}
-          language={to}
-          label={isConverting ? 'Converting...' : 'Output'}
-          readOnly
+        <SplitEditor
+          fromValue={input}
+          toValue={output}
+          onFromChange={setInput}
+          fromLanguage={from}
+          toLanguage={to}
+          fromLabel="Source"
+          toLabel={isConverting ? 'Converting...' : 'Output'}
         />
       </div>
 
