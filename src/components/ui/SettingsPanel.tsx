@@ -57,7 +57,7 @@ export function SettingsPanel({
   return (
     <div
       ref={panelRef}
-      className="absolute top-6 right-0 mt-1.5 w-72 bg-white dark:bg-[#0d0d0d] border border-gray-200 dark:border-[#2a2a2a] rounded-lg shadow-2xl p-4 z-[100]"
+      className="absolute top-20 right-5 mt-1.5 w-72 bg-white dark:bg-[#0d0d0d] border border-gray-200 dark:border-[#2a2a2a] rounded-lg shadow-2xl p-4 z-[100]"
     >
       {/* Header */}
       <div className="flex items-center gap-2 pb-3 mb-3 border-b border-gray-100 dark:border-[#1a1a1a]">

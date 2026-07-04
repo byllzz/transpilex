@@ -3,12 +3,26 @@ import { convertCode } from '../lib/converters';
 import { formatCode } from '../lib/format';
 import type { ConversionResult } from '../types';
 
-export function useConverter() {
-  const [input, setInput] = useState('');
-  const [output, setOutput] = useState('');
+interface UseConverterOptions {
+  initialInput?: string;
+  initialOutput?: string;
+  initialFrom?: string;
+  initialTo?: string;
+}
+
+export function useConverter(options: UseConverterOptions = {}) {
+  const {
+    initialInput = '',
+    initialOutput = '',
+    initialFrom = 'html',
+    initialTo = 'jsx',
+  } = options;
+
+  const [input, setInput] = useState(initialInput);
+  const [output, setOutput] = useState(initialOutput);
+  const [from, setFrom] = useState(initialFrom);
+  const [to, setTo] = useState(initialTo);
   const [error, setError] = useState<string | null>(null);
-  const [from, setFrom] = useState('html');
-  const [to, setTo] = useState('jsx');
   const [isConverting, setIsConverting] = useState(false);
 
   const convert = useCallback(async (code: string, source: string, target: string) => {
@@ -45,6 +59,7 @@ export function useConverter() {
     output,
     setOutput,
     error,
+    setError,
     from,
     setFrom,
     to,

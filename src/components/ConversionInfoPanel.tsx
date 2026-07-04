@@ -17,7 +17,7 @@ export function ConversionInfoPanel({
   onClose,
 }: ConversionInfoPanelProps) {
   return (
-    <div className="absolute right-0 mt-1.5 top-full w-64 bg-white dark:bg-[#0d0d0d] border border-gray-200 dark:border-[#2a2a2a] rounded-lg shadow-2xl p-4 z-[100]">
+    <div className="absolute right-12 top-20  w-64 bg-white dark:bg-[#0d0d0d] border border-gray-200 dark:border-[#2a2a2a] rounded-lg shadow-2xl p-4 z-[100]">
       <div className="flex items-center justify-between pb-2 mb-2 border-b border-gray-100 dark:border-[#1a1a1a]">
         <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
           Conversion Status

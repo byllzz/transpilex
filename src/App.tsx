@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Header } from './components/layout/Header';
 import { SplitEditor } from './components/editor/SplitEditor';
 import { LanguageSelector } from './components/editor/LanguageSelector';
@@ -15,13 +15,34 @@ import { CiWarning } from 'react-icons/ci';
 import { SAMPLES } from './lib/samples';
 import { X } from 'lucide-react';
 
+// ---- Read stored values ----
+const STORAGE_KEYS = {
+  input: 'transpilex-input',
+  output: 'transpilex-output',
+  from: 'transpilex-from',
+  to: 'transpilex-to',
+};
+
+function getStoredValues() {
+  return {
+    input: localStorage.getItem(STORAGE_KEYS.input) || '',
+    output: localStorage.getItem(STORAGE_KEYS.output) || '',
+    from: localStorage.getItem(STORAGE_KEYS.from) || 'html',
+    to: localStorage.getItem(STORAGE_KEYS.to) || 'jsx',
+  };
+}
+
 function AppContent() {
+  //  Hydrate from localStorage
+  const stored = getStoredValues();
+
   const {
     input,
     setInput,
     output,
     setOutput,
     error,
+    setError,
     from,
     setFrom,
     to,
@@ -29,17 +50,28 @@ function AppContent() {
     isConverting,
     convert,
     swapLanguages,
-  } = useConverter();
+  } = useConverter({
+    initialInput: stored.input,
+    initialOutput: stored.output,
+    initialFrom: stored.from,
+    initialTo: stored.to,
+  });
 
-  // App-wide preloader state
-  const [isAppLoading, setIsAppLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorTimeout, setErrorTimeout] = useState<number | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showConversionInfo, setShowConversionInfo] = useState(false);
 
-  // Use custom hooks
+  //  Persist to localStorage on every change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.input, input);
+    localStorage.setItem(STORAGE_KEYS.output, output);
+    localStorage.setItem(STORAGE_KEYS.from, from);
+    localStorage.setItem(STORAGE_KEYS.to, to);
+  }, [input, output, from, to]);
+
+  //  Use settings & conversion hooks
   const { settings, updateFontFamily, updateFontSize } = useSettings();
   const {
     notification,
@@ -51,33 +83,47 @@ function AppContent() {
     availableTargets,
   } = useConversion(from, to, setTo);
 
-  // Handle initialization/site preloader dismissal
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsAppLoading(false);
-    }, 1200); // 800ms gives a smooth initial feel
-    return () => clearTimeout(timer);
-  }, []);
+  //  Track if user has manually typed
+  const hasUserTyped = useRef(false);
+  const isInitialMount = useRef(true);
 
-  // Load sample when 'from' changes
+  //  Load sample when 'from' changes (but NOT on initial mount if we have stored input)
   useEffect(() => {
-    if (SAMPLES[from]) {
+    // Skip initial mount if we have stored input or user has typed
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      // Don't load sample if we have stored input OR if user already typed
+      if (stored.input || hasUserTyped.current) return;
+    }
+
+    // If user has typed at any point, don't override their work
+    if (hasUserTyped.current) return;
+
+    if (SAMPLES[from] && !input.trim()) {
       setInput(SAMPLES[from]);
     }
-  }, [from, setInput]);
+  }, [from, setInput, stored.input, input]);
 
-  // Conversion
+  //  Mark that user has typed when input changes manually
+  const handleInputChange = (newValue: string) => {
+    hasUserTyped.current = true;
+    setInput(newValue);
+  };
+
+  //  Conversion effect
   useEffect(() => {
     const hasConverter = conversionPairs.some(p => p.source.id === from && p.target.id === to);
     if (!input.trim() || !hasConverter) {
-      setOutput('');
+      if (!input.trim()) {
+        setOutput('');
+      }
       return;
     }
     const timer = setTimeout(() => convert(input, from, to), 100);
     return () => clearTimeout(timer);
   }, [input, from, to, convert, setOutput]);
 
-  // Error auto‑hide
+  //  Error auto‑hide
   useEffect(() => {
     if (error) {
       setShowError(true);
@@ -133,25 +179,13 @@ function AppContent() {
     URL.revokeObjectURL(url);
   };
 
-  // Render preloader overlay if application is initializing
-  if (isAppLoading) {
-    return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center bg-white dark:bg-[#0a0a0a] transition-colors duration-300 z-[9999]">
-        <div className="w-10 h-10 border-4 border-gray-200 dark:border-zinc-800 border-t-blue-600 dark:border-t-blue-500 rounded-full animate-spin"></div>
-        <span className="mt-4 text-xs font-medium text-gray-500 dark:text-zinc-400 tracking-wider animate-pulse">
-          Loading TranspileX Converter Workspace...
-        </span>
-      </div>
-    );
-  }
-
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100 overflow-hidden transition-colors">
       <Header />
 
       <NotificationBanner notification={notification} onDismiss={() => setNotification(null)} />
 
-      <div className="relative px-4 py-2 border-b border-gray-200 dark:border-[#1a1a1a] bg-gray-50 dark:bg-[#0d0d0d] flex flex-wrap items-center justify-between gap-2 transition-colors">
+      <div className="px-4 py-2 border-b border-gray-200 dark:border-[#1a1a1a] bg-gray-50 dark:bg-[#0d0d0d] flex flex-wrap items-center justify-between gap-2 transition-colors">
         <LanguageSelector
           from={from}
           to={to}
@@ -172,7 +206,6 @@ function AppContent() {
           disabledDownload={!output}
         />
 
-        {/* Settings Panel */}
         {showSettings && (
           <SettingsPanel
             fontFamily={settings.fontFamily}
@@ -183,7 +216,6 @@ function AppContent() {
           />
         )}
 
-        {/* Conversion Info Panel */}
         {showConversionInfo && (
           <ConversionInfoPanel
             fromLabel={fromLabel}
@@ -216,7 +248,7 @@ function AppContent() {
         <SplitEditor
           fromValue={input}
           toValue={output}
-          onFromChange={setInput}
+          onFromChange={handleInputChange}
           fromLanguage={from}
           toLanguage={to}
           fromLabel="Source"
