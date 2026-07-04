@@ -13,8 +13,8 @@ interface SplitEditorProps {
   toLabel?: string;
   fromLoading?: boolean;
   toLoading?: boolean;
-  fontFamily?: string; // 👈 new
-  fontSize?: number; // 👈 new
+  fontFamily?: string;
+  fontSize?: number;
 }
 
 export function SplitEditor({
@@ -45,8 +45,8 @@ export function SplitEditor({
           role="input"
           editorTheme={editorTheme}
           loading={fromLoading}
-          fontFamily={fontFamily} // 👈 pass through
-          fontSize={fontSize} // 👈 pass through
+          fontFamily={fontFamily}
+          fontSize={fontSize}
         />
       </div>
 
@@ -58,7 +58,7 @@ export function SplitEditor({
         aria-valuenow={Math.round(leftWidth)}
         className="relative w-0.5 shrink-0 bg-gray-300 dark:bg-[#2a2a2a] hover:bg-gray-400 dark:hover:bg-white/30 cursor-col-resize group transition-colors"
       >
-        {/* Expanded hit area — ~20px */}
+        {/* Expanded hit area */}
         <div className="absolute inset-y-0 -left-[10px] -right-[10px]" />
 
         {/* Visual handle pill */}

@@ -15,7 +15,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const stored = localStorage.getItem('theme') as Theme | null;
     return stored ?? 'light';
   });
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
+
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>(() => {
+    //  compute correct value synchronously on first render
+    const stored = (localStorage.getItem('theme') as Theme | null) ?? 'light';
+    const isDark =
+      stored === 'dark' ||
+      (stored === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    return isDark ? 'dark' : 'light';
+  });
 
   useEffect(() => {
     localStorage.setItem('theme', theme);

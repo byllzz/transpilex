@@ -2,7 +2,7 @@ import type { Monaco } from '@monaco-editor/react';
 import type * as MonacoTypes from 'monaco-editor';
 import { JSX_SNIPPETS, VOID_TAGS, toMonacoLang } from './constants';
 
-//  Global config — runs once per page load
+//  Global config - runs once per page load
 
 let configured = false;
 

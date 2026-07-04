@@ -1,7 +1,6 @@
 import { ArrowRightToLine, ArrowLeftToLine } from 'lucide-react';
 
 //  Panel role visual config
-
 export type PanelRole = 'input' | 'output';
 
 export const ROLE_STYLES: Record<
@@ -28,7 +27,6 @@ export const ROLE_STYLES: Record<
 };
 
 //  Language → Monaco language ID
-
 const LANG_MAP: Record<string, string> = {
   js: 'javascript',
   jsx: 'javascript',
@@ -55,7 +53,6 @@ export function toMonacoLang(language: string): string {
 }
 
 //  Tags that must never be auto-closed
-
 export const VOID_TAGS = new Set([
   'area',
   'base',
@@ -74,7 +71,6 @@ export const VOID_TAGS = new Set([
 ]);
 
 //  JSX / React snippet definitions
-
 export const JSX_SNIPPETS: Record<string, string> = {
   useState: 'const [${1:state}, set${1/(.*)/${1:/capitalize}/}] = useState(${2:initialValue});',
   useEffect: 'useEffect(() => {\n\t${1}\n\treturn () => {\n\t\t${2}\n\t};\n}, [${3}]);',

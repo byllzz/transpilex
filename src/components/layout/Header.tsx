@@ -4,7 +4,7 @@ import { FaGithub } from 'react-icons/fa';
 export function Header() {
   return (
     <header className="h-12 min-h-[48px] border-b border-gray-200 dark:border-[#1a1a1a] px-4 flex items-center justify-between bg-white/80 dark:bg-[#0a0a0a]/80 backdrop-blur-sm transition-colors">
-      {/* Left: Brand */}
+      {/* Left: logo & title */}
       <div className="flex items-center">
         <div className="flex items-center justify-center w-7 h-7  text-indigo-600 dark:text-indigo-400">
           <ArrowLeftRight className="w-4 h-4" />

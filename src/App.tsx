@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Header } from './components/layout/Header';
 import { SplitEditor } from './components/editor/SplitEditor';
 import { LanguageSelector } from './components/editor/LanguageSelector';
@@ -13,15 +13,17 @@ import { ThemeProvider } from './context/ThemeContext';
 import { languages, conversionPairs } from './lib/languages';
 import { CiWarning } from 'react-icons/ci';
 import { SAMPLES } from './lib/samples';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 
-// ---- Read stored values ----
+//  Storage keys
 const STORAGE_KEYS = {
   input: 'transpilex-input',
   output: 'transpilex-output',
   from: 'transpilex-from',
   to: 'transpilex-to',
 };
+
+const SESSION_KEY = 'transpilex-loaded';
 
 function getStoredValues() {
   return {
@@ -32,9 +34,25 @@ function getStoredValues() {
   };
 }
 
+//  Loading screen
+function LoadingScreen() {
+  return (
+    <div className="h-screen flex flex-col items-center justify-center bg-white dark:bg-[#0a0a0a] transition-colors">
+      <Loader2 className="w-20 h-20 text-indigo-600 dark:text-indigo-400 animate-spin mb-4" />
+      <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Loading TranspileX</h2>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        Preparing your code converter...
+      </p>
+    </div>
+  );
+}
+
 function AppContent() {
-  //  Hydrate from localStorage
-  const stored = getStoredValues();
+  //  Check session storage for loader flag
+  const hasLoadedBefore = sessionStorage.getItem(SESSION_KEY) === 'true';
+  const [isLoading, setIsLoading] = useState(!hasLoadedBefore);
+
+  const stored = useMemo(() => getStoredValues(), []);
 
   const {
     input,
@@ -42,7 +60,7 @@ function AppContent() {
     output,
     setOutput,
     error,
-    setError,
+    // setError,
     from,
     setFrom,
     to,
@@ -63,7 +81,20 @@ function AppContent() {
   const [showSettings, setShowSettings] = useState(false);
   const [showConversionInfo, setShowConversionInfo] = useState(false);
 
-  //  Persist to localStorage on every change
+  //  Initial loader – only runs once per session
+  useEffect(() => {
+    if (hasLoadedBefore) {
+      setIsLoading(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      sessionStorage.setItem(SESSION_KEY, 'true');
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [hasLoadedBefore]);
+
+  //  Persist state
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.input, input);
     localStorage.setItem(STORAGE_KEYS.output, output);
@@ -71,7 +102,6 @@ function AppContent() {
     localStorage.setItem(STORAGE_KEYS.to, to);
   }, [input, output, from, to]);
 
-  //  Use settings & conversion hooks
   const { settings, updateFontFamily, updateFontSize } = useSettings();
   const {
     notification,
@@ -83,47 +113,38 @@ function AppContent() {
     availableTargets,
   } = useConversion(from, to, setTo);
 
-  //  Track if user has manually typed
   const hasUserTyped = useRef(false);
   const isInitialMount = useRef(true);
 
-  //  Load sample when 'from' changes (but NOT on initial mount if we have stored input)
+  //  Load samples
   useEffect(() => {
-    // Skip initial mount if we have stored input or user has typed
     if (isInitialMount.current) {
       isInitialMount.current = false;
-      // Don't load sample if we have stored input OR if user already typed
-      if (stored.input || hasUserTyped.current) return;
+      if (stored.input) return;
     }
-
-    // If user has typed at any point, don't override their work
     if (hasUserTyped.current) return;
-
-    if (SAMPLES[from] && !input.trim()) {
+    if (SAMPLES[from]) {
       setInput(SAMPLES[from]);
     }
-  }, [from, setInput, stored.input, input]);
+  }, [from, setInput, stored.input]);
 
-  //  Mark that user has typed when input changes manually
   const handleInputChange = (newValue: string) => {
     hasUserTyped.current = true;
     setInput(newValue);
   };
 
-  //  Conversion effect
+  //  Conversion
   useEffect(() => {
     const hasConverter = conversionPairs.some(p => p.source.id === from && p.target.id === to);
     if (!input.trim() || !hasConverter) {
-      if (!input.trim()) {
-        setOutput('');
-      }
+      if (!input.trim()) setOutput('');
       return;
     }
     const timer = setTimeout(() => convert(input, from, to), 100);
     return () => clearTimeout(timer);
   }, [input, from, to, convert, setOutput]);
 
-  //  Error auto‑hide
+  //  Error handling
   useEffect(() => {
     if (error) {
       setShowError(true);
@@ -178,6 +199,8 @@ function AppContent() {
     link.click();
     URL.revokeObjectURL(url);
   };
+
+  if (isLoading) return <LoadingScreen />;
 
   return (
     <div className="h-screen flex flex-col bg-white dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100 overflow-hidden transition-colors">
