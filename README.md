@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./fav.svg" width="120" alt="TranspileX Logo" />
+  <img src="/src/assets/fav.svg" width="120" alt="TranspileX Logo" />
 </p>
 
 <h1 align="center">TranspileX</h1>
